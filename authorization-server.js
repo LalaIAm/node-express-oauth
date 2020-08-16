@@ -76,6 +76,20 @@ app.get("/authorize", (req, res) => {
 	})
 });
 
+app.post('/approve', (req, res) => {
+	let request;
+	const { userName, password, requestID } = req.body;
+	if (users[userName] !== password) {
+		res.status(401).send("Error: Incorrect password")
+	}
+	request = requests[requestID]
+	if (!request) {
+		res.status(401)	
+	} else {	
+		requests[requestID] = null;
+	}
+	
+})
 
 
 const server = app.listen(config.port, "localhost", function () {
