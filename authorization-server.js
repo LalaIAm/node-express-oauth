@@ -104,6 +104,19 @@ app.post('/approve', (req, res) => {
 	res.redirect(url.format(redirectUri))
 })
 
+app.post('/token', (req, res) => {
+	const token = req.headers.authorization;
+	if (!token) {
+		res.status(401).send('invalid token')
+		return;
+	}
+
+	const { clientId, clientSecret } = decodeAuthCredentials(token);
+	const client = clients[clientId];
+	if (!client || client.secret !== clientSecret) {
+		res.status(401).send()
+	}
+})
 
 const server = app.listen(config.port, "localhost", function () {
   var host = server.address().address;
