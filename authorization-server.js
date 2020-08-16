@@ -1,3 +1,4 @@
+const url = require('url')
 const fs = require("fs");
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -77,18 +78,30 @@ app.get("/authorize", (req, res) => {
 });
 
 app.post('/approve', (req, res) => {
-	let request;
-	const { userName, password, requestID } = req.body;
-	if (users[userName] !== password) {
+	const { userName, password, requestId } = req.body;
+	if (!userName || users[userName] !== password) {
 		res.status(401).send("Error: Incorrect password")
+		return
 	}
-	request = requests[requestID]
-	if (!request) {
-		res.status(401)	
-	} else {	
-		requests[requestID] = null;
+	const clientReq = requests[requestId]
+	delete requests[requestId]
+	if (!clientReq) {
+		res.status(401).send("Error: invalid request")
+		return;
+	}
+	const code = randomString()
+	authorizationCodes[code] = {
+		clientReq: clientReq,
+		userName: userName
+	}
+
+	const redirectUri = url.parse(clientReq.redirect_uri)
+	redirectUri.query = {
+		code,
+		state: clientReq.state,
 	}
 	
+	res.redirect(url.format(redirectUri))
 })
 
 
